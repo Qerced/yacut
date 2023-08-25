@@ -1,38 +1,32 @@
-from flask import abort, flash, redirect, render_template
+from flask import abort, redirect, render_template, url_for
 
-from . import app, db
+from settings import DONE_LINK_MESSAGE
+
+from . import app
 from .forms import YacutForm
 from .models import URLMap
-from .utils import get_unique_short_id
 
 
 @app.route('/', methods=['GET', 'POST'])
 def index_view():
     form = YacutForm()
     if form.validate_on_submit():
-        if not form.custom_id.data:
-            form.custom_id.data = get_unique_short_id(
-                form.original_link.data
-            )
-        url = URLMap.query.filter_by(original=form.original_link.data).first()
-        if url is None:
-            url = URLMap(
-                original=form.original_link.data,
-                short=form.custom_id.data
-            )
-            db.session.add(url)
-        else:
-            url.short = form.custom_id.data
-        db.session.commit()
-        flash('Ваша новая ссылка готова:')
+        url = URLMap.get_or_create(
+            original=form.original_link.data,
+            short=form.custom_id.data
+        )
         return render_template(
-            'index.html', form=form, short_url='http://localhost/' + url.short)
+            'index.html',
+            form=form,
+            short_url=url_for('index_view', _external=True) + url.short,
+            flash_messages=DONE_LINK_MESSAGE
+        )
     return render_template('index.html', form=form)
 
 
-@app.route('/<short_url>', methods=['GET', 'POST'])
+@app.route('/<short_url>', methods=['GET'])
 def url_view(short_url):
-    url = URLMap.query.filter_by(short=short_url).first()
+    url = URLMap.get_url(short=short_url)
     if not url:
         abort(404)
     return redirect(location=url.original)
