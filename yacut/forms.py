@@ -2,9 +2,8 @@ from flask_wtf import FlaskForm
 from wtforms import SubmitField, URLField, ValidationError
 from wtforms.validators import URL, DataRequired, Length, Optional, Regexp
 
-from settings import (CUSTOMID_MESSAGE, DATAREQUIRED_MESSAGE,
-                      EXIST_SHORT_MESSAGE, ORIGINAL_MAX_LEN, ORIGINAL_MIN_LEN,
-                      REGEX_CUSTOMID_FORM, SHORT_MAX_LEN, SHORT_MIN_LEN,
+from settings import (DATAREQUIRED_MESSAGE, EXIST_SHORT_MESSAGE,
+                      INVALID_SHORT_MESSAGE, ORIGINAL_MIN_LEN, REGEX_FOR_SHORT,
                       SUBMIT_BUTTON, URLVALIDATOR_MESSAGE)
 
 from .models import URLMap
@@ -15,7 +14,7 @@ class YacutForm(FlaskForm):
         'Длинная ссылка',
         validators=[
             DataRequired(message=DATAREQUIRED_MESSAGE),
-            Length(ORIGINAL_MIN_LEN, ORIGINAL_MAX_LEN),
+            Length(ORIGINAL_MIN_LEN, URLMap.original.type.length),
             URL(message=URLVALIDATOR_MESSAGE)
         ]
     )
@@ -23,14 +22,15 @@ class YacutForm(FlaskForm):
         'Ваш вариант короткой ссылки',
         validators=[
             Optional(),
-            Length(SHORT_MIN_LEN, SHORT_MAX_LEN, message=CUSTOMID_MESSAGE),
-            Regexp(regex=REGEX_CUSTOMID_FORM, message=CUSTOMID_MESSAGE)
+            Length(max=URLMap.short.type.length,
+                   message=INVALID_SHORT_MESSAGE),
+            Regexp(regex=REGEX_FOR_SHORT, message=INVALID_SHORT_MESSAGE)
         ]
     )
     submit = SubmitField(SUBMIT_BUTTON)
 
     def validate_custom_id(form, field):
-        if URLMap.get_url(short=field.data):
+        if URLMap.get(short=field.data):
             raise ValidationError(
                 EXIST_SHORT_MESSAGE.format(short_name=field.data)
             )
