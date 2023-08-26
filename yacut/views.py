@@ -16,7 +16,7 @@ def index_view():
         form.custom_id.data = URLMap.get_unique_short_id(
             form.original_link.data
         )
-    urlmap = URLMap.create(
+    url_map = URLMap.create(
         original_link=form.original_link.data,
         custom_id=form.custom_id.data,
     )
@@ -24,13 +24,13 @@ def index_view():
     return render_template(
         'index.html',
         form=form,
-        short_url=url_for(INDEX_VIEW, _external=True) + urlmap.short,
+        short_url=url_for(INDEX_VIEW, _external=True) + url_map.short,
     )
 
 
 @app.route('/<short_url>', methods=['GET'])
 def url_view(short_url):
-    url = URLMap.get(short=short_url)
-    if not url:
+    url_map = URLMap.get(short=short_url)
+    if not url_map:
         abort(404)
-    return redirect(location=url.original)
+    return redirect(location=url_map.original)

@@ -5,13 +5,16 @@ from wtforms.validators import URL, DataRequired, Length, Optional, Regexp
 from settings import (DATAREQUIRED_MESSAGE, EXIST_SHORT_MESSAGE,
                       INVALID_SHORT_MESSAGE, ORIGINAL_MIN_LEN, REGEX_FOR_SHORT,
                       SUBMIT_BUTTON, URLVALIDATOR_MESSAGE)
-
 from .models import URLMap
+
+
+LABEL_ORIGINAL = 'Длинная ссылка'
+LABEL_SHORT = 'Ваш вариант короткой ссылки'
 
 
 class YacutForm(FlaskForm):
     original_link = URLField(
-        'Длинная ссылка',
+        LABEL_ORIGINAL,
         validators=[
             DataRequired(message=DATAREQUIRED_MESSAGE),
             Length(ORIGINAL_MIN_LEN, URLMap.original.type.length),
@@ -19,7 +22,7 @@ class YacutForm(FlaskForm):
         ]
     )
     custom_id = URLField(
-        'Ваш вариант короткой ссылки',
+        LABEL_SHORT,
         validators=[
             Optional(),
             Length(max=URLMap.short.type.length,
