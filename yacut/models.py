@@ -1,4 +1,4 @@
-import re
+import string
 from datetime import datetime
 from random import choices
 
@@ -6,11 +6,10 @@ from flask import url_for
 
 from settings import (DATAREQUIRED_MESSAGE, EXIST_SHORT_MESSAGE_API,
                       INDEX_VIEW, INVALID_SHORT_MESSAGE, LEN_RANDOM_SHORT,
-                      NUMBER_OF_RECEIPTS, ORIGINAL_MAX_LEN, REGEX_FOR_ORIGINAL,
-                      REGEX_FOR_SHORT, SHORT_MAX_LEN, URL_LEN_MESSAGE,
-                      URLVALIDATOR_MESSAGE)
+                      NUMBER_OF_RECEIPTS, ORIGINAL_MAX_LEN, REGEX_FOR_SHORT,
+                      SHORT_MAX_LEN, URL_LEN_MESSAGE)
 from . import db
-from .error_handler import InvalidAPIUsage
+from .error_handler import InvalidDataError
 
 
 class URLMap(db.Model):
@@ -30,45 +29,34 @@ class URLMap(db.Model):
 
     @staticmethod
     def create(original_link, custom_id):
-        url = URLMap(original=original_link, short=custom_id)
-        db.session.add(url)
+        if not original_link:
+            raise InvalidDataError(DATAREQUIRED_MESSAGE)
+        if not (ORIGINAL_MAX_LEN >= len(original_link) > SHORT_MAX_LEN):
+            raise InvalidDataError(URL_LEN_MESSAGE)
+        if not custom_id:
+            custom_id = URLMap.get_unique_short_id()
+        if not LEN_RANDOM_SHORT >= len(custom_id):
+            raise InvalidDataError(INVALID_SHORT_MESSAGE)
+        if REGEX_FOR_SHORT.match(custom_id or '') is None:
+            raise InvalidDataError(INVALID_SHORT_MESSAGE)
+        if URLMap.get(short=custom_id):
+            raise InvalidDataError(
+                EXIST_SHORT_MESSAGE_API.format(short_name=custom_id)
+            )
+        url_map = URLMap(original=original_link, short=custom_id)
+        db.session.add(url_map)
         db.session.commit()
-        return url
+        return url_map
 
     @staticmethod
-    def get_unique_short_id(original_link):
+    def get_unique_short_id():
         for _ in range(NUMBER_OF_RECEIPTS):
-            custom_id = URLMap.random_url(original_link)
+            custom_id = ''.join(
+                choices(
+                    list(string.ascii_lowercase + string.digits),
+                    k=LEN_RANDOM_SHORT
+                )
+            )
             if URLMap.get(short=custom_id) is None:
                 break
         return custom_id
-
-    @staticmethod
-    def random_url(original_link):
-        return ''.join(choices(list(re.sub(
-            REGEX_FOR_SHORT, '', ''.join(original_link.split('/'))
-        )), k=LEN_RANDOM_SHORT))
-
-    @staticmethod
-    def validate_original(original_link):
-        if not original_link:
-            raise InvalidAPIUsage(DATAREQUIRED_MESSAGE)
-        if not (
-            URLMap.original.type.length >=
-            len(original_link) >
-            URLMap.short.type.length
-        ):
-            raise InvalidAPIUsage(URL_LEN_MESSAGE)
-        if re.compile(REGEX_FOR_ORIGINAL).match(original_link or '') is None:
-            raise InvalidAPIUsage(URLVALIDATOR_MESSAGE)
-
-    @staticmethod
-    def validate_short(custom_id):
-        if not (URLMap.short.type.length >= len(custom_id)):
-            raise InvalidAPIUsage(INVALID_SHORT_MESSAGE)
-        if re.compile(REGEX_FOR_SHORT).match(custom_id or '') is None:
-            raise InvalidAPIUsage(INVALID_SHORT_MESSAGE)
-        if URLMap.get(short=custom_id):
-            raise InvalidAPIUsage(
-                EXIST_SHORT_MESSAGE_API.format(short_name=custom_id)
-            )

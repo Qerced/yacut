@@ -4,7 +4,7 @@ from flask import jsonify, request
 
 from settings import EMPTY_REQUEST_MESSAGE, SHORT_NOT_FOUND
 from . import app
-from .error_handler import InvalidAPIUsage
+from .error_handler import InvalidAPIUsage, InvalidDataError
 from .models import URLMap
 
 
@@ -15,15 +15,13 @@ def create_link():
         raise InvalidAPIUsage(EMPTY_REQUEST_MESSAGE)
     custom_id = data.get('custom_id')
     original_link = data.get('url')
-    URLMap.validate_original(original_link)
-    if custom_id:
-        URLMap.validate_short(custom_id)
-    else:
-        custom_id = URLMap.get_unique_short_id(original_link)
-    url_map = URLMap.create(
-        original_link=original_link,
-        custom_id=custom_id,
-    )
+    try:
+        url_map = URLMap.create(
+            original_link=original_link,
+            custom_id=custom_id,
+        )
+    except InvalidDataError as error:
+        raise InvalidAPIUsage(error.message)
     return jsonify(url_map.to_dict()), HTTPStatus.CREATED
 
 
