@@ -25,7 +25,7 @@ def index_view():
                 ).short)
         )
     except InvalidDataError as error:
-        flash(*error.args)
+        flash(str(error))
         return render_template('index.html', form=form)
 
 

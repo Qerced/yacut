@@ -2,7 +2,7 @@ from http import HTTPStatus
 
 from flask import jsonify, request
 
-from settings import DATA_REQUIRED_MESSAGE, ORIGINAL_MAX_LEN, URL_LEN_MESSAGE
+from settings import DATA_REQUIRED_MESSAGE
 from . import app
 from .error_handler import InvalidAPIUsage, InvalidDataError
 from .models import URLMap
@@ -18,16 +18,14 @@ def create_link():
         raise InvalidAPIUsage(EMPTY_REQUEST_MESSAGE)
     custom_id = data.get('custom_id')
     original_link = data.get('url')
-    if not original_link:
+    if 'custom_id' in original_link:
         raise InvalidAPIUsage(DATA_REQUIRED_MESSAGE)
-    if ORIGINAL_MAX_LEN < len(original_link):
-        raise InvalidDataError(URL_LEN_MESSAGE)
     try:
         return jsonify(URLMap.create(original_link=original_link,
                                      custom_id=custom_id
                                      ).to_dict()), HTTPStatus.CREATED
     except InvalidDataError as error:
-        raise InvalidAPIUsage(*error.args)
+        raise InvalidAPIUsage(str(error))
 
 
 @app.route('/api/id/<short_id>/', methods=['GET'])

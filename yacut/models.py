@@ -1,3 +1,4 @@
+import inspect
 import re
 from datetime import datetime
 from random import choices
@@ -7,8 +8,10 @@ from flask import url_for
 from settings import (EXIST_SHORT_MESSAGE_API, GENERATE_SHORT_ERROR,
                       INVALID_SHORT_MESSAGE, LEN_RANDOM_SHORT,
                       NUMBER_OF_RECEIPTS, ORIGINAL_MAX_LEN, PATTERN_FOR_SHORT,
-                      SHORT_MAX_LEN, URL_VIEW, VALID_CHARACTERS)
+                      SHORT_MAX_LEN, URL_LEN_MESSAGE, URL_VIEW,
+                      VALID_CHARACTERS)
 from . import db
+from .api_views import create_link
 from .error_handler import InvalidDataError
 
 
@@ -28,18 +31,22 @@ class URLMap(db.Model):
         return URLMap.query.filter_by(short=short).first()
 
     @staticmethod
-    def create(original_link, custom_id):
-        if not custom_id:
-            custom_id = URLMap.get_unique_short_id()
-        elif LEN_RANDOM_SHORT < len(custom_id):
-            raise InvalidDataError(INVALID_SHORT_MESSAGE)
-        elif re.match(PATTERN_FOR_SHORT, custom_id) is None:
-            raise InvalidDataError(INVALID_SHORT_MESSAGE)
-        elif URLMap.get(short=custom_id):
-            raise InvalidDataError(
-                EXIST_SHORT_MESSAGE_API.format(short_name=custom_id)
-            )
-        url_map = URLMap(original=original_link, short=custom_id)
+    def create(original_link, short):
+        if not short:
+            short = URLMap.get_unique_short_id()
+        if (inspect.currentframe().f_back.f_code.co_name ==
+                create_link.__name__):
+            if ORIGINAL_MAX_LEN < len(original_link):
+                raise InvalidDataError(URL_LEN_MESSAGE)
+            if LEN_RANDOM_SHORT < len(short):
+                raise InvalidDataError(INVALID_SHORT_MESSAGE)
+            if re.match(PATTERN_FOR_SHORT, short) is None:
+                raise InvalidDataError(INVALID_SHORT_MESSAGE)
+            if URLMap.get(short=short):
+                raise InvalidDataError(
+                    EXIST_SHORT_MESSAGE_API.format(short_name=short)
+                )
+        url_map = URLMap(original=original_link, short=short)
         db.session.add(url_map)
         db.session.commit()
         return url_map
@@ -47,9 +54,9 @@ class URLMap(db.Model):
     @staticmethod
     def get_unique_short_id():
         for _ in range(NUMBER_OF_RECEIPTS):
-            custom_id = ''.join(
+            short = ''.join(
                 choices(list(VALID_CHARACTERS), k=LEN_RANDOM_SHORT)
             )
-            if URLMap.get(custom_id) is None:
-                return custom_id
+            if URLMap.get(short) is None:
+                return short
         raise InvalidDataError(GENERATE_SHORT_ERROR)
