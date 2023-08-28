@@ -1,9 +1,10 @@
 from flask_wtf import FlaskForm
 from wtforms import SubmitField, URLField, ValidationError
-from wtforms.validators import URL, DataRequired, Length, Optional
+from wtforms.validators import URL, DataRequired, Length, Optional, Regexp
 
 from settings import (DATA_REQUIRED_MESSAGE, INVALID_SHORT_MESSAGE,
-                      ORIGINAL_MAX_LEN, SHORT_MAX_LEN, URL_VALIDATOR_MESSAGE)
+                      ORIGINAL_MAX_LEN, PATTERN_FOR_SHORT, SHORT_MAX_LEN,
+                      URL_VALIDATOR_MESSAGE)
 from .models import URLMap
 
 LABEL_ORIGINAL = 'Длинная ссылка'
@@ -25,7 +26,8 @@ class YacutForm(FlaskForm):
         LABEL_SHORT,
         validators=[
             Optional(),
-            Length(max=SHORT_MAX_LEN, message=INVALID_SHORT_MESSAGE)
+            Length(max=SHORT_MAX_LEN, message=INVALID_SHORT_MESSAGE),
+            Regexp(regex=PATTERN_FOR_SHORT, message=INVALID_SHORT_MESSAGE)
         ]
     )
     submit = SubmitField(SUBMIT_BUTTON)

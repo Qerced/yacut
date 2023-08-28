@@ -8,14 +8,15 @@ URL_VALIDATOR_MESSAGE = 'Запрещенные символы'
 URL_LEN_MESSAGE = 'Недопустимая длина для длинной ссылки'
 INVALID_SHORT_MESSAGE = 'Указано недопустимое имя для короткой ссылки'
 EXIST_SHORT_MESSAGE_API = 'Имя "{short_name}" уже занято.'
-GENERATE_SHORT_ERROR = ('''Не удалось сгенерировать короткую'''
-                        '''ссылку, попробуйте еще раз.''')
-PATTERN_FOR_SHORT = f"[{re.escape(string.ascii_letters + string.digits)}]+"
+GENERATE_SHORT_ERROR = ('Не удалось сгенерировать короткую'
+                        'ссылку, попробуйте еще раз.')
+VALID_CHARACTERS = string.ascii_letters + string.digits
+PATTERN_FOR_SHORT = f'^[{re.escape(VALID_CHARACTERS)}]+$'
 SHORT_MAX_LEN = 16
 ORIGINAL_MAX_LEN = 2083
 NUMBER_OF_RECEIPTS = 10
 LEN_RANDOM_SHORT = 6
-INDEX_VIEW = 'index_view'
+URL_VIEW = 'url_view'
 
 
 class Config(object):
