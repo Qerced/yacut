@@ -21,7 +21,7 @@ def index_view():
                 _external=True,
                 short_url=URLMap.create(
                     original_link=form.original_link.data,
-                    custom_id=form.custom_id.data,
+                    short=form.custom_id.data,
                 ).short)
         )
     except InvalidDataError as error:

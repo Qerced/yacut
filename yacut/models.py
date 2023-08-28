@@ -5,13 +5,12 @@ from random import choices
 
 from flask import url_for
 
-from settings import (EXIST_SHORT_MESSAGE_API, GENERATE_SHORT_ERROR,
-                      INVALID_SHORT_MESSAGE, LEN_RANDOM_SHORT,
-                      NUMBER_OF_RECEIPTS, ORIGINAL_MAX_LEN, PATTERN_FOR_SHORT,
-                      SHORT_MAX_LEN, URL_LEN_MESSAGE, URL_VIEW,
-                      VALID_CHARACTERS)
+from settings import (CREATE_LINK_VIEW, EXIST_SHORT_MESSAGE_API,
+                      GENERATE_SHORT_ERROR, INVALID_SHORT_MESSAGE,
+                      LEN_RANDOM_SHORT, NUMBER_OF_RECEIPTS, ORIGINAL_MAX_LEN,
+                      PATTERN_FOR_SHORT, SHORT_MAX_LEN, URL_LEN_MESSAGE,
+                      URL_VIEW, VALID_CHARACTERS)
 from . import db
-from .api_views import create_link
 from .error_handler import InvalidDataError
 
 
@@ -35,7 +34,7 @@ class URLMap(db.Model):
         if not short:
             short = URLMap.get_unique_short_id()
         if (inspect.currentframe().f_back.f_code.co_name ==
-                create_link.__name__):
+                CREATE_LINK_VIEW):
             if ORIGINAL_MAX_LEN < len(original_link):
                 raise InvalidDataError(URL_LEN_MESSAGE)
             if LEN_RANDOM_SHORT < len(short):

@@ -17,6 +17,7 @@ ORIGINAL_MAX_LEN = 2083
 NUMBER_OF_RECEIPTS = 10
 LEN_RANDOM_SHORT = 6
 URL_VIEW = 'url_view'
+CREATE_LINK_VIEW = 'create_link'
 
 
 class Config(object):

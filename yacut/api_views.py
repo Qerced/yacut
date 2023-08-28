@@ -18,11 +18,11 @@ def create_link():
         raise InvalidAPIUsage(EMPTY_REQUEST_MESSAGE)
     custom_id = data.get('custom_id')
     original_link = data.get('url')
-    if 'custom_id' in original_link:
+    if original_link in (None, False, 0, "", [], {}):
         raise InvalidAPIUsage(DATA_REQUIRED_MESSAGE)
     try:
         return jsonify(URLMap.create(original_link=original_link,
-                                     custom_id=custom_id
+                                     short=custom_id
                                      ).to_dict()), HTTPStatus.CREATED
     except InvalidDataError as error:
         raise InvalidAPIUsage(str(error))
