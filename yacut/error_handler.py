@@ -17,6 +17,7 @@ class InvalidAPIUsage(Exception):
 
 
 class InvalidDataError(Exception):
+    # Да, это "специализированное исключение")
     def __init__(self, message):
         super().__init__()
         self.message = message

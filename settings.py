@@ -1,16 +1,16 @@
 import os
 import re
+import string
 
 
-DATAREQUIRED_MESSAGE = '"url" является обязательным полем!'
-URLVALIDATOR_MESSAGE = 'Запрещенные символы'
+DATA_REQUIRED_MESSAGE = '"url" является обязательным полем!'
+URL_VALIDATOR_MESSAGE = 'Запрещенные символы'
 URL_LEN_MESSAGE = 'Недопустимая длина для длинной ссылки'
 INVALID_SHORT_MESSAGE = 'Указано недопустимое имя для короткой ссылки'
 EXIST_SHORT_MESSAGE_API = 'Имя "{short_name}" уже занято.'
-EMPTY_REQUEST_MESSAGE = 'Отсутствует тело запроса'
-SHORT_NOT_FOUND = 'Указанный id не найден'
-DONE_LINK_MESSAGE = 'Ваша новая ссылка готова:'
-REGEX_FOR_SHORT = re.compile(r'^[a-zA-Z0-9]*$')
+GENERATE_SHORT_ERROR = ('''Не удалось сгенерировать короткую'''
+                        '''ссылку, попробуйте еще раз.''')
+PATTERN_FOR_SHORT = f"[{re.escape(string.ascii_letters + string.digits)}]+"
 SHORT_MAX_LEN = 16
 ORIGINAL_MAX_LEN = 2083
 NUMBER_OF_RECEIPTS = 10

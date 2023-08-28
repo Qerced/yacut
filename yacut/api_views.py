@@ -2,10 +2,13 @@ from http import HTTPStatus
 
 from flask import jsonify, request
 
-from settings import EMPTY_REQUEST_MESSAGE, SHORT_NOT_FOUND
+from settings import DATA_REQUIRED_MESSAGE
 from . import app
 from .error_handler import InvalidAPIUsage, InvalidDataError
 from .models import URLMap
+
+EMPTY_REQUEST_MESSAGE = 'Отсутствует тело запроса'
+SHORT_NOT_FOUND = 'Указанный id не найден'
 
 
 @app.route('/api/id/', methods=['POST'])
@@ -15,14 +18,15 @@ def create_link():
         raise InvalidAPIUsage(EMPTY_REQUEST_MESSAGE)
     custom_id = data.get('custom_id')
     original_link = data.get('url')
+    if not original_link:
+        raise InvalidAPIUsage(DATA_REQUIRED_MESSAGE)
     try:
-        url_map = URLMap.create(
-            original_link=original_link,
-            custom_id=custom_id,
-        )
+
+        return jsonify(URLMap.create(original_link=original_link,
+                                     custom_id=custom_id
+                                     ).to_dict()), HTTPStatus.CREATED
     except InvalidDataError as error:
         raise InvalidAPIUsage(error.message)
-    return jsonify(url_map.to_dict()), HTTPStatus.CREATED
 
 
 @app.route('/api/id/<short_id>/', methods=['GET'])

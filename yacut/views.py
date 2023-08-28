@@ -1,8 +1,8 @@
 from flask import abort, flash, redirect, render_template, url_for
 
-from settings import DONE_LINK_MESSAGE, INDEX_VIEW
+from settings import INDEX_VIEW
 from . import app
-from .error_handler import InvalidDataError, ValidationError
+from .error_handler import InvalidDataError
 from .forms import YacutForm
 from .models import URLMap
 
@@ -13,18 +13,18 @@ def index_view():
     if not form.validate_on_submit():
         return render_template("index.html", form=form)
     try:
-        url_map = URLMap.create(
-            original_link=form.original_link.data,
-            custom_id=form.custom_id.data,
+        return render_template(
+            'index.html',
+            form=form,
+            short_url=url_for(INDEX_VIEW, _external=True) +
+            URLMap.create(
+                original_link=form.original_link.data,
+                custom_id=form.custom_id.data,
+            ).short
         )
     except InvalidDataError as error:
-        raise ValidationError(error.messge)
-    flash(DONE_LINK_MESSAGE)
-    return render_template(
-        'index.html',
-        form=form,
-        short_url=url_for(INDEX_VIEW, _external=True) + url_map.short,
-    )
+        flash(error.message)
+        return render_template('index.html', form=form)
 
 
 @app.route('/<short_url>', methods=['GET'])
