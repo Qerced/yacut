@@ -18,7 +18,7 @@ def create_link():
         raise InvalidAPIUsage(EMPTY_REQUEST_MESSAGE)
     custom_id = data.get('custom_id')
     original_link = data.get('url')
-    if original_link in (None, False, 0, "", [], {}):
+    if not isinstance(original_link, str):
         raise InvalidAPIUsage(DATA_REQUIRED_MESSAGE)
     try:
         return jsonify(URLMap.create(original_link=original_link,
