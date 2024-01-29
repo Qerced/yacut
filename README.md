@@ -5,8 +5,9 @@
 ## Технологический стек
 
 * Flask
-* SQLAlchemy
-* Jinja
+* Flask-WTF
+* Flask-SQLAlchemy
+* Flask-Migrate
 
 ## Установка
 
